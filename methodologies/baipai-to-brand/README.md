@@ -7,7 +7,7 @@
 | 来源 | [抖音：好望水前操盘手分享](https://v.douyin.com/hyco-vQT08s/) |
 | 案例背景 | 饮料品类，千万级 → 亿级，2021–2023 年抖音剧情内容红利期 |
 | 收录时间 | 2026-10-26 |
-| 文件 | `SKILL.md`（Claude skill）· `diagnosis.json`（自诊断网站数据）· `sources.md`（原始素材说明） |
+| 文件 | [逐字稿](transcript.md) · `SKILL.md`（Claude skill）· `diagnosis.json`（自诊断网站数据）· `sources.md`（原始素材说明） |
 
 ## 一句话
 

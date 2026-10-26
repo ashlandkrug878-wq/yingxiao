@@ -9,7 +9,7 @@
 3. **README.md**：来源、一句话、mermaid 脑图、阶段或结构表、评析。
 4. **SKILL.md**：frontmatter 的 `name` 与 `id` 一致；默认在对话里给结论，用户明确要求才生成文档。
 5. **diagnosis.json**：按 `docs/schema.md`。写完用 `python3 -c "import json;json.load(open('...'))"` 校验；字符串里的引号用中文引号“”，不要用英文双引号。
-6. **sources.md**：只记来源链接和素材保存位置。仓库是公开的，不要提交第三方的逐字稿、截图或文章全文。
+6. **transcript.md 与 sources.md**：用户同意把逐字稿放进仓库，但必须在开头注明来源链接、"内容版权归原作者所有"，以及语音转写可能有误。截图默认不上传，用户明确要求时再加。`sources.md` 记来源链接和各类素材的保存位置；`diagnosis.json` 的 `source.transcript` 填逐字稿在 GitHub 上的链接。
 7. **注册**：把 `id` 加入 `methodologies/index.json`。
 8. **检查网站**：本地 `python3 -m http.server` 后用浏览器打开 `/#/m/<id>`，确认概览和诊断结果正常。
 9. **同步 skill**：SKILL.md 有改动时，用 propose_skills 把新版本提给用户保存。

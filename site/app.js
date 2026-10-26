@@ -113,7 +113,8 @@
       h += '<p class="lede">' + esc(d.summary) + "</p>";
       if (d.source) {
         h += '<p class="src">来源：' + (d.source.url ? '<a href="' + esc(d.source.url) + '" target="_blank" rel="noopener">' + esc(d.source.title) + "</a>" : esc(d.source.title)) +
-          (d.source.note ? "。" + esc(d.source.note) : "") + "</p>";
+          (d.source.note ? "。" + esc(d.source.note) : "") +
+          (d.source.transcript ? '。<a href="' + esc(d.source.transcript) + '" target="_blank" rel="noopener">看逐字稿</a>' : "") + "</p>";
       }
       if (d.tags) h += '<div class="tags">' + d.tags.map(function (t) { return '<span class="tag">' + esc(t) + "</span>"; }).join("") + "</div>";
 

@@ -19,7 +19,7 @@
   "title": "从白牌到品牌",
   "subtitle": "一句话说明结构",
   "summary": "两三句话的核心观点",
-  "source": { "title": "", "url": "", "note": "" },
+  "source": { "title": "", "url": "", "note": "", "transcript": "逐字稿的 GitHub 链接，可选" },
   "tags": ["品牌建设"],
   "added": "YYYY-MM-DD",
   "meta": { "steps_ordered": true },  // 可选，默认 true

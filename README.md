@@ -26,7 +26,8 @@ methodologies/
     README.md            笔记：结构、脑图、评析
     SKILL.md             Claude skill
     diagnosis.json       自诊断数据
-    sources.md           原始素材说明（原文不放公开仓库）
+    transcript.md        逐字稿（注明来源）
+    sources.md           原始素材说明
 docs/schema.md           diagnosis.json 数据规范
 CLAUDE.md                给 Claude 的维护说明
 ```
