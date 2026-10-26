@@ -14,6 +14,7 @@
 |---|---|---|
 | [从白牌到品牌](methodologies/baipai-to-brand/) | 00 准入判断 + 01–06 六步路径 + 阶段时间线 | 抖音 · 好望水前操盘手 |
 | [品牌感从哪来](methodologies/brand-proposition/) | 00 前提 + 主张、行动、传播三步 | 抖音 · 程前朋友圈 |
+| [小预算滚雪球](methodologies/growth-positioning/) | 00 前提 + 01–07 增长定位路径 | 抖音 · 雅先生品牌短视频0-1增长 |
 
 ## 目录结构
 
