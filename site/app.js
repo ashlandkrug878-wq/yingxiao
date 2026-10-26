@@ -72,7 +72,7 @@
   /* ---------- route (stations) ---------- */
   function stations(d) {
     var st = [];
-    if (d.gates) st.push({ key: "gate", no: gateNo(d), name: stripNum(d.gates.title), tag: "能不能做", gate: true });
+    if (d.gates) st.push({ key: "gate", no: gateNo(d), name: stripNum(d.gates.title), tag: d.gates.tag || "能不能做", gate: true });
     (d.steps || []).forEach(function (s) { st.push({ key: s.id, no: s.id, name: s.title, tag: s.tagline }); });
     return st;
   }
@@ -239,6 +239,9 @@
   }
 
   /* ---------- diagnosis ---------- */
+  function vetoNames(r) {
+    return r.gates.filter(function (x) { return x.g.veto && x.o.outcome === "fail"; }).map(function (x) { return x.g.title; }).join("、");
+  }
   var OUT = { pass: "通过", risk: "有风险", fail: "不通过" };
 
   function diagnose(d, a) {
@@ -291,7 +294,7 @@
     var el = document.getElementById("result");
     var h = '<section class="result" aria-labelledby="rt"><h2 id="rt">' + esc(a.who ? a.who + " 的诊断" : "诊断结果") + "</h2>";
     h += routeHtml(d, statusMap(d, r));
-    h += '<div class="legend"><span style="--c:var(--line);--b:var(--line)">已完成</span><span style="--c:var(--risk);--b:var(--risk-soft)">按规模应完成，但还没做完</span><span style="--c:var(--rule);--b:var(--paper)">还没到</span></div>';
+    h += '<div class="legend"><span style="--c:var(--line);--b:var(--line)">已完成</span>' + (d.stages ? '<span style="--c:var(--risk);--b:var(--risk-soft)">按规模应完成，但还没做完</span>' : '') + '<span style="--c:var(--rule);--b:var(--paper)">还没到</span></div>';
 
     if (r.verdict) {
       h += '<div class="rsec"><h3>' + esc(d.gates.title) + '</h3><span class="verdict ' + r.verdict.cls + '">' + esc(r.verdict.text) + "</span>" +
@@ -302,7 +305,7 @@
     }
 
     if (r.stop) {
-      h += '<div class="rsec"><h3>下一步</h3><p>先改产品，暂停 01–06 的所有动作。产品底子通过之后再回来重新诊断。</p></div>';
+      h += '<div class="rsec"><h3>下一步</h3><p>先解决一票否决项：' + esc(vetoNames(r)) + '。在它通过之前，后面的步骤都先暂停，解决后再回来重新诊断。</p></div>';
     } else {
       if (r.stuck) {
         h += '<div class="rsec"><h3>卡在 ' + esc(r.stuck.s.id + " " + r.stuck.s.title) + "</h3>" +
@@ -353,7 +356,7 @@
       L.push("", d.gates.title + "：" + r.verdict.text);
       r.gates.forEach(function (x) { L.push("- " + x.g.title + "（" + OUT[x.o.outcome] + "）：" + x.o.advice); });
     }
-    if (r.stop) { L.push("", "下一步：先改产品，暂停其他动作。"); return L.join("\n"); }
+    if (r.stop) { L.push("", "下一步：先解决一票否决项（" + vetoNames(r) + "），其他步骤暂停。"); return L.join("\n"); }
     if (r.stage) L.push("", "所处阶段：" + r.stage.label + "（" + r.stage.desc + "）");
     if (r.stuck) {
       L.push("", "卡在：" + r.stuck.s.id + " " + r.stuck.s.title);
