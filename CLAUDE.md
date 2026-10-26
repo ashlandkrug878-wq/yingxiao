@@ -10,9 +10,14 @@
 4. **SKILL.md**：frontmatter 的 `name` 与 `id` 一致；默认在对话里给结论，用户明确要求才生成文档。
 5. **diagnosis.json**：按 `docs/schema.md`。写完用 `python3 -c "import json;json.load(open('...'))"` 校验；字符串里的引号用中文引号“”，不要用英文双引号。
 6. **transcript.md 与 sources.md**：用户同意把逐字稿放进仓库，但必须在开头注明来源链接、"内容版权归原作者所有"，以及语音转写可能有误。截图默认不上传，用户明确要求时再加。`sources.md` 记来源链接和各类素材的保存位置；`diagnosis.json` 的 `source.transcript` 填逐字稿在 GitHub 上的链接。
-7. **注册**：把 `id` 加入 `methodologies/index.json`。
-8. **检查网站**：本地 `python3 -m http.server` 后用浏览器打开 `/#/m/<id>`，确认概览和诊断结果正常。
-9. **同步 skill**：SKILL.md 有改动时，用 propose_skills 把新版本提给用户保存。
+7. **错题**：把方法论里提到的错误打法写进 `diagnosis.json` 的 `pitfalls`（格式和分类见 `docs/schema.md`）。只收原文明确说过是错误或踩过的坑，不要自己推演；同一个错误和其他方法论已有的错题重复时，仍然各自保留，标题尽量用相同说法，方便在错题集里对照。
+8. **注册**：把 `id` 加入 `methodologies/index.json`。
+9. **检查网站**：本地 `python3 -m http.server` 后用浏览器打开 `/#/m/<id>`，确认概览和诊断结果正常。
+10. **同步 skill**：SKILL.md 有改动时，用 propose_skills 把新版本提给用户保存。
+
+## 团队复盘
+
+用户发来自己项目的复盘、或者说"记到错题集"时，整理成一条写进 `pitfalls/team.json`：写清项目、时间、怎么识别、为什么错、正确做法；能对应到某套方法论的错题时，填 `related`。不要写进个人信息、具体金额以外的敏感经营数据，除非用户明确要求。
 
 ## 约定
 

@@ -5,6 +5,7 @@
 - **笔记**（`README.md`）：结构、脑图、评析
 - **Claude skill**（`SKILL.md`）：让 Claude 按这套方法论做诊断和规划
 - **自诊断数据**（`diagnosis.json`）：驱动网站上的自诊断问卷
+- **错题**（`diagnosis.json` 里的 `pitfalls`）：方法论里提到的错误打法，网站上汇总成[错题集](https://ashlandkrug878-wq.github.io/yingxiao/#/pitfalls)，可以逐条自查
 
 网站：<https://ashlandkrug878-wq.github.io/yingxiao/>
 
@@ -30,6 +31,7 @@ methodologies/
     diagnosis.json       自诊断数据
     transcript.md        逐字稿（注明来源）
     sources.md           原始素材说明
+pitfalls/team.json       团队自己的复盘错题
 docs/schema.md           diagnosis.json 数据规范
 CLAUDE.md                给 Claude 的维护说明
 ```

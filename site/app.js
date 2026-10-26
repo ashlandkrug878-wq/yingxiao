@@ -33,7 +33,8 @@
   /* ---------- routing ---------- */
   function route() {
     var m = location.hash.match(/^#\/m\/([\w-]+)/);
-    if (m) renderMethod(m[1]); else renderHome();
+    var pf = location.hash.match(/^#\/pitfalls(?:\/([\w-]+))?/);
+    if (m) renderMethod(m[1]); else if (pf) renderPitfalls(pf[1]); else renderHome();
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", route);
@@ -65,7 +66,8 @@
       app.innerHTML =
         "<h1>营销方法论库</h1>" +
         '<p class="lede">每套方法论拆成路线和检查项。选一套，回答几个问题，看看品牌现在卡在哪一步。</p>' +
-        (rows ? '<ul class="mlist">' + rows + "</ul>" : '<p class="empty">还没有收录方法论。按仓库 README 的步骤添加第一套。</p>');
+        (rows ? '<ul class="mlist">' + rows + "</ul>" : '<p class="empty">还没有收录方法论。按仓库 README 的步骤添加第一套。</p>') +
+        pitfallTeaser(ms);
     }).catch(function (e) { fail(e.message); });
   }
 
@@ -131,6 +133,12 @@
         if (d.stages.note) h += '<p class="note">' + esc(d.stages.note) + "</p>";
       }
 
+      if (d.pitfalls && d.pitfalls.length) {
+        h += "<h2>这一套提到的错误打法</h2><p class=\"sub\">共 " + d.pitfalls.length + ' 条。到<a href="#/pitfalls/' + esc(d.id) + '">错题集</a>里逐条自查。</p>';
+        h += '<ul class="pfmini">' + d.pitfalls.map(function (p) {
+          return "<li><span class=\"pfstep\">" + esc(p.step) + "</span><span>" + esc(p.title) + "</span></li>";
+        }).join("") + "</ul>";
+      }
       h += '<section class="diag" aria-labelledby="dg"><h2 id="dg">自诊断</h2><p class="sub">按实际情况回答，没做到的就不勾。答案只保存在这台设备的浏览器里。</p>';
       h += '<form id="form" novalidate>';
       h += '<div class="who"><label for="who">诊断对象（可选）</label><input type="text" id="who" name="who" placeholder="例如：MKB 坐垫" value="' + esc(saved.who || "") + '"></div>';
@@ -305,15 +313,16 @@
     }
 
     if (r.stop) {
-      h += '<div class="rsec"><h3>下一步</h3><p>先解决一票否决项：' + esc(vetoNames(r)) + '。在它通过之前，后面的步骤都先暂停，解决后再回来重新诊断。</p></div>';
+      h += '<div class="rsec"><h3>下一步</h3><p>先解决一票否决项：' + esc(vetoNames(r)) + '。在它通过之前，后面的步骤都先暂停，解决后再回来重新诊断。</p></div>' + stepPitfalls(d, gateNo(d));
     } else {
       if (r.stuck) {
         h += '<div class="rsec"><h3>卡在 ' + esc(r.stuck.s.id + " " + r.stuck.s.title) + "</h3>" +
           "<p style=\"margin:0 0 6px\">还没做到：</p>" + list(r.stuck.missing) +
           "<p style=\"margin:12px 0 6px\">最该做的事：</p>" + list(r.stuck.s.actions, "ol") +
-          (r.stuck.s.done_signal ? '<p class="note">进入下一步的标志：' + esc(r.stuck.s.done_signal) + "</p>" : "") + "</div>";
+          (r.stuck.s.done_signal ? '<p class="note">进入下一步的标志：' + esc(r.stuck.s.done_signal) + "</p>" : "") + "</div>" +
+          stepPitfalls(d, r.stuck.s.id);
       } else if (r.allDone) {
-        h += '<div class="rsec"><h3>路线已经走完</h3><p>六步的检查项都已做到。按下面的阶段建议持续经营，并定期回来复查。</p></div>';
+        h += '<div class="rsec"><h3>路线已经走完</h3><p>所有步骤的检查项都已做到。按下面的阶段建议持续经营，并定期回来复查。</p></div>';
       } else if (!r.ordered) {
         var miss = r.steps.filter(function (x) { return !x.done; });
         h += '<div class="rsec"><h3>未完成项</h3>' + list(miss.map(function (x) { return x.s.title + "：" + x.missing.join("；"); })) + "</div>";
@@ -365,7 +374,9 @@
       L.push("最该做的事：");
       r.stuck.s.actions.forEach(function (m, i) { L.push((i + 1) + ". " + m); });
       if (r.stuck.s.done_signal) L.push("进入下一步的标志：" + r.stuck.s.done_signal);
-    } else if (r.allDone) L.push("", "六步检查项都已做到。");
+      var sp = (d.pitfalls || []).filter(function (p) { return p.step === r.stuck.s.id; });
+      if (sp.length) { L.push("这一步常见的错误打法："); sp.forEach(function (p) { L.push("- " + p.title + "。正确做法：" + p.fix); }); }
+    } else if (r.allDone) L.push("", "所有步骤的检查项都已做到。");
     var others = r.debts.filter(function (x) { return x !== r.stuck; });
     if (others.length) { L.push("", "其他欠账："); others.forEach(function (x) { L.push("- " + x.s.id + " " + x.s.title); }); }
     if (r.stage) {
@@ -373,6 +384,149 @@
       L.push("这个阶段不该做：" + (r.stage.donts || []).join("；"));
     }
     return L.join("\n");
+  }
+
+  /* ---------- pitfalls (错题集) ---------- */
+  var CATS = ["产品与定位", "品牌建设", "内容", "达人与投放", "预算与 ROI", "组织与认知"];
+
+  function stepPitfalls(d, stepId) {
+    var ps = (d.pitfalls || []).filter(function (p) { return p.step === stepId; });
+    if (!ps.length) return "";
+    return '<div class="rsec"><h3>这一步常见的错误打法</h3><ul class="pfres">' + ps.map(function (p) {
+      return "<li><b>" + esc(p.title) + "</b><span>正确做法：" + esc(p.fix) + "</span></li>";
+    }).join("") + '</ul><p class="note"><a href="#/pitfalls/' + esc(d.id) + '">到错题集逐条自查</a></p></div>';
+  }
+
+  function pitfallTeaser(ms) {
+    var n = 0;
+    ms.forEach(function (d) { n += (d.pitfalls || []).length; });
+    if (!n) return "";
+    return '<a class="pfteaser" href="#/pitfalls"><span class="mtitle">错题集</span>' +
+      '<span class="mmeta">' + n + " 条错误打法，来自 " + ms.length + " 套方法论。逐条对照，勾出我们正在犯的。</span></a>";
+  }
+
+  function loadAllPitfalls() {
+    return load("methodologies/index.json").then(function (idx) {
+      return Promise.all(idx.methodologies.map(function (id) { return loadMethod(id).catch(function () { return null; }); }))
+        .then(function (ms) {
+          return load("pitfalls/team.json").catch(function () { return { pitfalls: [] }; }).then(function (team) {
+            var items = [];
+            ms.filter(Boolean).forEach(function (d) {
+              var names = {};
+              (d.steps || []).forEach(function (s) { names[s.id] = s.title; });
+              if (d.gates) names[gateNo(d)] = stripNum(d.gates.title);
+              (d.pitfalls || []).forEach(function (p) {
+                items.push({ p: p, key: d.id + ":" + p.id, src: d.id, srcTitle: d.title,
+                  where: (p.step ? p.step + " " + (names[p.step] || "") : "").trim() });
+              });
+            });
+            (team.pitfalls || []).forEach(function (p) {
+              items.push({ p: p, key: "team:" + p.id, src: "team", srcTitle: "团队复盘",
+                where: [p.project, p.date].filter(Boolean).join("，") });
+            });
+            return { ms: ms.filter(Boolean), items: items, teamCount: (team.pitfalls || []).length };
+          });
+        });
+    });
+  }
+
+  function renderPitfalls(srcFilter) {
+    document.title = "错题集 · 营销方法论库";
+    loadAllPitfalls().then(function (all) {
+      var st = store("pitfalls") || {};
+      st.checked = st.checked || [];
+      st.cat = st.cat || "";
+      st.src = srcFilter || "";
+      st.only = !!st.only;
+
+      var srcOpts = '<option value="">全部来源</option>' + all.ms.map(function (d) {
+        return '<option value="' + esc(d.id) + '">' + esc(d.title) + "</option>";
+      }).join("") + '<option value="team">团队复盘</option>';
+      var cats = CATS.filter(function (c) { return all.items.some(function (x) { return x.p.category === c; }); });
+      all.items.forEach(function (x) { if (cats.indexOf(x.p.category) < 0) cats.push(x.p.category); });
+
+      app.innerHTML =
+        "<h1>错题集</h1>" +
+        '<p class="lede">各套方法论里提到的错误打法，以及我们自己复盘出来的坑。逐条对照，勾出我们正在犯的。</p>' +
+        '<div class="pfbar">' +
+          '<div class="chips" role="group" aria-label="按分类筛选"><button type="button" class="chip" data-cat="">全部</button>' +
+            cats.map(function (c) { return '<button type="button" class="chip" data-cat="' + esc(c) + '">' + esc(c) + "</button>"; }).join("") + "</div>" +
+          '<div class="pfctl"><label for="pfsrc">来源</label><select id="pfsrc">' + srcOpts + "</select>" +
+          '<label class="onlyhit"><input type="checkbox" id="pfonly"> 只看已勾选</label></div>' +
+        "</div>" +
+        '<div class="pfsum" aria-live="polite"><span id="pfcount"></span><button type="button" class="ghost" id="pfcopy">复制已勾选清单</button><button type="button" class="ghost" id="pfclear">清空勾选</button><span class="copied" id="pfcopied"></span></div>' +
+        '<div id="pflist"></div>' +
+        '<h2>团队复盘</h2><p class="sub">' + (all.teamCount ? "团队自己踩过的坑共 " + all.teamCount + " 条，已合并在上面的列表里，来源显示为“团队复盘”。" :
+          "还没有团队自己的复盘记录。") +
+        '新增记录写进仓库的 <a href="https://github.com/ashlandkrug878-wq/yingxiao/blob/main/pitfalls/team.json" target="_blank" rel="noopener">pitfalls/team.json</a>，也可以直接把复盘内容发给 Claude 整理进去。</p>' +
+        '<p style="margin-top:40px"><a href="#/">回到方法论列表</a></p>';
+
+      var srcSel = document.getElementById("pfsrc");
+      srcSel.value = st.src;
+      document.getElementById("pfonly").checked = st.only;
+
+      function save() { store("pitfalls", { checked: st.checked, cat: st.cat, only: st.only }); }
+      function draw() {
+        document.querySelectorAll(".chip").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-cat") === st.cat ? "true" : "false"); });
+        var vis = all.items.filter(function (x) {
+          return (!st.cat || x.p.category === st.cat) && (!st.src || x.src === st.src) && (!st.only || st.checked.indexOf(x.key) > -1);
+        });
+        var groups = cats.filter(function (c) { return vis.some(function (x) { return x.p.category === c; }); });
+        var h = groups.map(function (c) {
+          var its = vis.filter(function (x) { return x.p.category === c; });
+          return '<section class="pfgroup"><h2>' + esc(c) + ' <span class="cnt">' + its.length + "</span></h2>" + its.map(card).join("") + "</section>";
+        }).join("");
+        document.getElementById("pflist").innerHTML = h || '<p class="empty">' + (st.only ? "还没有勾选任何一条。取消“只看已勾选”可以看到全部。" : "这个筛选条件下没有错误打法。") + "</p>";
+        var hit = all.items.filter(function (x) { return st.checked.indexOf(x.key) > -1; }).length;
+        document.getElementById("pfcount").textContent = "共 " + all.items.length + " 条，已勾选 " + hit + " 条";
+      }
+      function card(x) {
+        var on = st.checked.indexOf(x.key) > -1;
+        var srcLink = x.src === "team" ? esc(x.srcTitle) : '<a href="#/m/' + esc(x.src) + '">' + esc(x.srcTitle) + "</a>";
+        return '<article class="pf' + (on ? " hit" : "") + '">' +
+          "<h3>" + esc(x.p.title) + "</h3>" +
+          "<dl><dt>怎么识别</dt><dd>" + esc(x.p.symptom) + "</dd><dt>为什么错</dt><dd>" + esc(x.p.why) + "</dd><dt>正确做法</dt><dd>" + esc(x.p.fix) + "</dd></dl>" +
+          '<div class="pffoot"><span class="pfsrc">来源：' + srcLink + (x.where ? "，" + esc(x.where) : "") + "</span>" +
+          '<label class="pfhit"><input type="checkbox" data-k="' + esc(x.key) + '"' + (on ? " checked" : "") + "> 我们正在这样做</label></div>" +
+          "</article>";
+      }
+
+      document.querySelector(".chips").addEventListener("click", function (e) {
+        var b = e.target.closest(".chip"); if (!b) return;
+        st.cat = b.getAttribute("data-cat"); save(); draw();
+      });
+      srcSel.addEventListener("change", function () {
+        st.src = srcSel.value;
+        history.replaceState(null, "", "#/pitfalls" + (st.src ? "/" + st.src : ""));
+        draw();
+      });
+      document.getElementById("pfonly").addEventListener("change", function (e) { st.only = e.target.checked; save(); draw(); });
+      document.getElementById("pflist").addEventListener("change", function (e) {
+        var k = e.target.getAttribute("data-k"); if (!k) return;
+        var i = st.checked.indexOf(k);
+        if (e.target.checked && i < 0) st.checked.push(k);
+        if (!e.target.checked && i > -1) st.checked.splice(i, 1);
+        e.target.closest(".pf").classList.toggle("hit", e.target.checked);
+        save();
+        var hit = all.items.filter(function (x) { return st.checked.indexOf(x.key) > -1; }).length;
+        document.getElementById("pfcount").textContent = "共 " + all.items.length + " 条，已勾选 " + hit + " 条";
+      });
+      document.getElementById("pfclear").addEventListener("click", function () { st.checked = []; save(); draw(); });
+      document.getElementById("pfcopy").addEventListener("click", function () {
+        var hits = all.items.filter(function (x) { return st.checked.indexOf(x.key) > -1; });
+        var L = ["【错题集自查】已勾选 " + hits.length + " 条"];
+        hits.forEach(function (x, i) {
+          L.push("", (i + 1) + ". " + x.p.title + "（" + x.srcTitle + (x.where ? "，" + x.where : "") + "）");
+          L.push("   为什么错：" + x.p.why);
+          L.push("   正确做法：" + x.p.fix);
+        });
+        var t = L.join("\n");
+        var done = function () { document.getElementById("pfcopied").textContent = hits.length ? "已复制" : "还没有勾选"; };
+        if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () { fallbackCopy(t); done(); });
+        else { fallbackCopy(t); done(); }
+      });
+      draw();
+    }).catch(function (e) { fail(e.message); });
   }
 
   route();
