@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "id": "your-methodology-id",
+  "title": "方法论名称",
+  "subtitle": "一句话说明结构",
+  "summary": "两三句话的核心观点。",
+  "source": { "title": "来源标题", "url": "https://", "note": "案例背景、时间窗口" },
+  "tags": ["标签"],
+  "added": "YYYY-MM-DD",
+  "meta": { "steps_ordered": true },
+  "gates": {
+    "title": "准入判断",
+    "intro": "说明",
+    "items": [
+      {
+        "id": "gate1", "title": "前提一", "summary": "一句话", "question": "问题？",
+        "options": [
+          { "label": "满足", "outcome": "pass", "advice": "建议" },
+          { "label": "部分满足", "outcome": "risk", "advice": "建议" },
+          { "label": "不满足", "outcome": "fail", "advice": "建议" }
+        ]
+      }
+    ]
+  },
+  "stages": {
+    "title": "所处阶段",
+    "question": "现在处在哪个阶段？",
+    "note": "",
+    "options": [
+      { "id": "s1", "label": "① 阶段一", "desc": "", "budget": "", "expect_done": [], "focus": "01", "dos": [], "donts": [] }
+    ]
+  },
+  "steps": [
+    { "id": "01", "title": "步骤一", "tagline": "", "points": [], "checks": ["完成项"], "actions": ["动作"], "done_signal": "" }
+  ],
+  "caveats": []
+}
