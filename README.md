@@ -17,6 +17,7 @@
 | [品牌感从哪来](methodologies/brand-proposition/) | 00 前提 + 主张、行动、传播三步 | 抖音 · 程前朋友圈 |
 | [小预算滚雪球](methodologies/growth-positioning/) | 00 前提 + 01–07 增长定位路径 | 抖音 · 雅先生品牌短视频0-1增长 |
 | [场景化五步法](methodologies/scene-five-steps/) | 场景痛点、承诺、产品、内容、触达五步 | 抖音 · 品牌老枪 |
+| [新品牌信任（柠檬市场）](methodologies/lemon-market-trust/) | 00 前提 + 三要素 + 四路径 + 公式与当晚三件事 | 抖音 · KAPI 卡皮品牌研究社 |
 
 ## 目录结构
 
