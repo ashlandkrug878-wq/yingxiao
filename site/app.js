@@ -27,6 +27,9 @@
       localStorage.setItem("yx:" + id, JSON.stringify(val));
     } catch (e) { return null; }
   }
+  function hasDebtStages(d) {
+    return !!(d.stages && d.stages.options.some(function (o) { return (o.expect_done || []).length; }));
+  }
   function stripNum(t) { return String(t || "").replace(/^\s*\d+\s*/, ""); }
   function gateNo(d) { return (d.gates && d.gates.station) || "00"; }
 
@@ -124,8 +127,8 @@
       h += '<div id="overview">' + routeHtml(d) + '</div><div class="detail" id="detail" hidden></div>';
 
       if (d.stages) {
-        h += "<h2>" + esc(d.stages.title) + "：每个规模做到哪一步</h2>";
-        h += '<table class="stages"><thead><tr><th>阶段</th><th>规模与预算</th><th>应做</th><th>不该做</th></tr></thead><tbody>' +
+        h += "<h2>" + esc(d.stages.heading || (d.stages.title + "：每个规模做到哪一步")) + "</h2>";
+        h += '<table class="stages"><thead><tr><th>阶段</th><th>' + esc(d.stages.desc_label || "规模与预算") + '</th><th>应做</th><th>不该做</th></tr></thead><tbody>' +
           d.stages.options.map(function (o) {
             return "<tr><td>" + esc(o.label) + "</td><td>" + esc(o.desc) + (o.budget ? "<br><span class=\"note\">" + esc(o.budget) + "</span>" : "") +
               "</td><td>" + esc((o.dos || []).join("；")) + "</td><td>" + esc((o.donts || []).join("；")) + "</td></tr>";
@@ -302,7 +305,7 @@
     var el = document.getElementById("result");
     var h = '<section class="result" aria-labelledby="rt"><h2 id="rt">' + esc(a.who ? a.who + " 的诊断" : "诊断结果") + "</h2>";
     h += routeHtml(d, statusMap(d, r));
-    h += '<div class="legend"><span style="--c:var(--line);--b:var(--line)">已完成</span>' + (d.stages ? '<span style="--c:var(--risk);--b:var(--risk-soft)">按规模应完成，但还没做完</span>' : '') + '<span style="--c:var(--rule);--b:var(--paper)">还没到</span></div>';
+    h += '<div class="legend"><span style="--c:var(--line);--b:var(--line)">已完成</span>' + (hasDebtStages(d) ? '<span style="--c:var(--risk);--b:var(--risk-soft)">按规模应完成，但还没做完</span>' : '') + '<span style="--c:var(--rule);--b:var(--paper)">还没到</span></div>';
 
     if (r.verdict) {
       h += '<div class="rsec"><h3>' + esc(d.gates.title) + '</h3><span class="verdict ' + r.verdict.cls + '">' + esc(r.verdict.text) + "</span>" +
@@ -334,7 +337,7 @@
       }
       if (r.stage) {
         var lag = r.stuck && r.stage.focus && r.stuck.s.id < r.stage.focus;
-        h += '<div class="rsec"><h3>' + esc(r.stage.label) + " 阶段</h3>" +
+        h += '<div class="rsec"><h3>' + esc(r.stage.label) + (d.stages.desc_label ? "" : " 阶段") + "</h3>" +
           (lag ? "<p>按规模，你的重点应该在 " + esc(r.stage.focus) + "，但 " + esc(r.stuck.s.id) + " 还没完成。先回头把它补上，否则后面的投入接不住。</p>" : "") +
           '<div class="cols"><div><p style="margin:0 0 4px;font-weight:600">这个阶段应做</p>' + list(r.stage.dos) + '</div><div><p style="margin:0 0 4px;font-weight:600">这个阶段不该做</p>' + list(r.stage.donts) + "</div></div></div>";
       }
