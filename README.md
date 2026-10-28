@@ -18,7 +18,7 @@
 | [小预算滚雪球](methodologies/growth-positioning/) | 00 前提 + 01–07 增长定位路径 | 抖音 · 雅先生品牌短视频0-1增长 |
 | [场景化五步法](methodologies/scene-five-steps/) | 场景痛点、承诺、产品、内容、触达五步 | 抖音 · 品牌老枪 |
 | [新品牌信任（柠檬市场）](methodologies/lemon-market-trust/) | 00 前提 + 信任三要素、四条路径、触点一致性 | 抖音 · KAPI 卡皮品牌研究社 |
-| [造梦体系](methodologies/dream-system/) | 内容电商四个段位 + 01–07 造梦路径 | 迪安（小红书，链接待补充） |
+| [造梦体系](methodologies/dream-system/) | 01–07 造梦路径（可直接套用的方案框架）+ 内容电商四个段位 | 迪安（小红书，链接待补充） |
 
 ## 目录结构
 
